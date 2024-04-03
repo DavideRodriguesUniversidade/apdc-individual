@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        form {
+            width: 60%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        input[type="submit"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #3f8c4b; /* Updated color */
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2a653a; /* Darker shade for hover */
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #3f8c4b; /* Updated color */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2a653a; /* Darker shade for hover */
+        }
+
+    </style>
+</head>
+
+<button onclick="window.location.href = 'index.html';">Go to Home page</button>
+
+<body>
+
+<h2>User Registration</h2>
+
+<form id="registrationForm">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br>
+
+	<label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br>
+    
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" required><br>
+    
+    <label for="phone">Telefone:</label><br>
+    <input type="number" id="phone" name="phone" required><br>
+    
+    <label for="profile">Profile:</label><br>
+    <select id="profile" name="profile">
+        <option value="Publico">Publico</option>
+        <option value="Privado">Privado</option>
+    </select><br>
+    
+    <label for="occupation">Occupation:</label><br>
+    <select id="occupation" name="occupation">
+        <option value="Professor">Professor</option>
+        <option value="Estudante">Estudante</option>
+        <option value="Investigador">Investigador</option>
+    </select><br>
+    
+    <label for="location">Location:</label><br>
+    <select id="location" name="location">
+        <option value="Empresa">Empresa</option>
+        <option value="Escola">Escola</option>
+        <option value="Escritório">Escritorio</option>
+    </select><br>
+    
+    <label for="name">Household:</label><br>
+    <input type="text" id="household" name="household"><br>
+    
+    <label for="cp">Codigo postal:</label><br>
+    <input type="text" id="cp" name="cp" maxlength="8" required><br>
+    
+    <label for="nif">NIF:</label><br>
+    <input type="text" id="nif" name="nif" maxlength="9" required><br>
+    
+   <label for="photo">Photo:</label><br>
+    <input type="file" id="photo" name="photo" accept="image/*"><br>
+    
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br>
+
+    <label for="password">Confirm Password:</label><br>
+    <input type="password" id="confirmPassword" name="confirmPassword" required><br>
+
+    
+    <input type="submit" value="Register">
+</form>
+
+<script>
+    const form = document.getElementById('registrationForm');
+    const cpInput = document.getElementById('cp');
+
+    cpInput.addEventListener('input', function(event) {
+        let value = event.target.value;
+
+        // Remove any non-numeric characters
+        value = value.replace(/\D/g, '');
+
+        // Add hyphen at the correct position
+        if (value.length > 4) {
+            value = value.substring(0, 4) + '-' + value.substring(4, 7);
+        }
+
+        // Limit the length of the input to match the pattern XXXX-XXX
+        if (value.length > 8) {
+            value = value.substring(0, 8);
+        }
+
+        // Update the input value
+        event.target.value = value;
+    });
+    
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const password = form.password.value;
+        const confirmPassword = form.confirmPassword.value; // add an id "confirmPassword" to the confirm password input field
+        
+        if (password !== confirmPassword) {
+            alert('Passwords do not match. Please try again.');
+            return; // exit the function and do not proceed with the registration
+        }
+    
+        const formData = {
+            username: form.username.value,
+            email: form.email.value,
+            name: form.name.value,
+            phone: form.phone.value, 
+            profile: form.profile.value,
+            occupation: form.occupation.value,
+            location: form.location.value,
+            household: form.household.value,
+            cp: form.cp.value,
+            nif: form.nif.value,
+            photo: form.photo.value,
+            password: password
+        };
+    
+        fetch('rest/register/v2', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                return response.json().then(error => {
+                    throw new Error(error);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+    
+            alert('User registered ' + form.name.value);
+            // Redirect to login page or any other page
+            window.location.href = '/login.html';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            if (error.message.includes("Missing or wrong parameter.")) {
+                alert('Missing or wrong parameter.');
+            } else if (error.message.includes("User already exists.")) {
+                alert('User already exists.');
+            } else if (error.message.includes("Overall account limit reached.")) {
+                alert('Overall account limit reached.');
+            } else {
+                alert('An error occurred while registering.');
+            }
+        });
+    });
+</script>
+</body>
+</html>
+

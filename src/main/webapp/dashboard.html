@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>My DashBoard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        button {
+            background-color: #3f8c4b;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2a6c3e; /* Darker shade of green */
+        }
+
+        #roleMessage, #userList {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="submit"] {
+            background-color: #3f8c4b;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2a6c3e; /* Darker shade of green */
+        }
+
+    </style>
+</head>
+
+<button onclick="window.location.href = 'bemvindo.html';">Go to Welcome Page</button>
+<button onclick="showRoleChange()">Change Roles</button>
+<button onclick="showStateChange()">Change State</button> 
+<button onclick="showRemoveList()">Remove User</button> 
+<button onclick="showListUsers()">List Users</button>
+<button onclick="showModifyUserForm()">Modify Attributes</button>
+<button onclick="changePassword()">Change Password</button>
+
+
+
+<body>
+    <div id="roleMessage"></div>
+    <div id="userList"></div>
+    
+    <div id="passwordChangeForm" style="display:none;">
+    <h3>Change Password</h3>
+    <form id="changePasswordForm">
+        <label for="currentPassword">Current Password:</label><br>
+        <input type="password" id="currentPassword" name="currentPassword" required><br>
+
+        <label for="newPassword">New Password:</label><br>
+        <input type="password" id="newPassword" name="newPassword" required><br>
+
+        <label for="confirmNewPassword">Confirm New Password:</label><br>
+        <input type="password" id="confirmNewPassword" name="confirmNewPassword" required><br>
+
+        <input type="submit" value="Change Password">
+    </form>
+	</div>
+    
+    
+    
+    <script>
+	    function getCookie(name) {
+	        const value = `; ${document.cookie}`;
+	        const parts = value.split(`; ${name}=`);
+	        if (parts.length === 2) return parts.pop().split(';').shift();
+	    }
+	
+	    // Retrieve the user role and username from cookies
+	    const userRole = getCookie('userRole');
+	    const username = getCookie('username');
+
+        // Get the roleMessage and userList elements
+        const roleMessageElement = document.getElementById('roleMessage');
+        const userListElement = document.getElementById('userList');
+
+        roleMessageElement.innerText = `Hello ${username}, your role is ${userRole}!`;
+	
+        
+        function hideAllSections() {
+            roleMessageElement.style.display = 'none';
+            userListElement.style.display = 'none';
+            document.getElementById('passwordChangeForm').style.display = 'none';
+        }
+        
+        //PASSWORD
+       function changePassword() {
+            hideAllSections();
+            document.getElementById('passwordChangeForm').style.display = 'block';
+        }
+
+
+        document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                alert('New passwords do not match. Please try again.');
+                return;
+            }
+
+            const passwordData = {
+                username: username,
+                currentPassword: currentPassword,
+                newPassword: newPassword,
+                confirmNewPassword: confirmNewPassword
+            };
+
+            fetch('rest/users/changePassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(passwordData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Password changed successfully:', data);
+                alert('Password changed successfully!');
+            })
+            .catch(error => {
+                console.error('Error: ', error);
+                
+                if (error.message.includes("Incorrect current password.")) {
+                alert('Incorrect current password.');
+                }else{
+                	alert('An error occurred changing password.');
+                }
+            });
+        });
+        
+        
+        function alterUserRole(username, currentRole) {
+            let allowedRoles = [];
+
+            if (userRole === 'SU') {
+                allowedRoles = ['SU', 'GA', 'GBO', 'USER'];
+            } else if (userRole === 'GA') {
+                allowedRoles = ['GBO', 'USER'];
+            }
+
+            let dropdownOptions = '';
+            allowedRoles.forEach(role => {
+                dropdownOptions += `<option value="${role}">${role}</option>`;
+            });
+
+            const dropdownHTML = `
+                <select id="roleDropdown-${username}">${dropdownOptions}</select>
+                <button onclick="updateUserRole('${username}', '${currentRole}')">Change Role</button>
+            `;
+
+            userListElement.innerHTML += `<div>${username} - ${currentRole} ${dropdownHTML}</div>`;
+        }
+
+        function alterUserState(username, currentState) {
+            const allowedStates = ['ACTIVE', 'INACTIVE'];
+
+            let dropdownOptions = '';
+            allowedStates.forEach(state => {
+                dropdownOptions += `<option value="${state}" ${currentState === state ? 'selected' : ''}>${state}</option>`;
+            });
+
+            const dropdownHTML = `
+                <select id="stateDropdown-${username}">${dropdownOptions}</select>
+                <button onclick="updateUserState('${username}', '${currentState}')">Change State</button>
+            `;
+
+            userListElement.innerHTML += `<div>${username} - ${currentState} ${dropdownHTML}</div>`;
+        }
+
+        function removeUser(username) {
+            fetch(`rest/users/remove`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('User removed:', data);
+                location.reload();  // Reload the page to reflect the changes
+            })
+            .catch(error => {
+                console.error('Error removing user:', error);
+            });
+        }
+
+        function updateUserRole(username, currentRole) {
+            const newRole = document.getElementById(`roleDropdown-${username}`).value;
+
+            const userData = {
+                username: username,
+                role: newRole
+            };
+
+            fetch('rest/users/updateRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Role updated:', data);
+                location.reload();  // Reload the page to reflect the changes
+            })
+            .catch(error => {
+                console.error('Error updating role:', error);
+            });
+        }
+
+        function updateUserState(username, currentState) {
+            const newState = document.getElementById(`stateDropdown-${username}`).value;
+
+            const userData = {
+                username: username,
+                state: newState
+            };
+
+            fetch('rest/users/updateState', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('State updated:', data);
+                location.reload();  // Reload the page to reflect the changes
+            })
+            .catch(error => {
+                console.error('Error updating state:', error);
+            });
+        }
+
+        function fetchRoleChangeList(callback) {
+            fetch('rest/users/list')
+            .then(response => response.json())
+            .then(users => {
+                users.forEach(user => {
+                    if (userRole === 'SU' || 
+                        (userRole === 'GA' && (user.role === 'USER' || user.role === 'GBO')) ||
+                        (userRole === 'GBO' && user.role === 'USER')) {
+                        callback(user.username, user.role);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching user list:', error);
+            });
+        }
+
+
+        function fetchStateChangeList(callback) {
+        	 if (userRole !== 'USER') {
+            	fetch('rest/users/list')
+            	.then(response => response.json())
+            	.then(users => {
+                	users.forEach(user => {
+                    	if (userRole === 'SU' || 
+                        	(userRole === 'GA' && (user.role === 'GBO' || user.role === 'USER')) ||
+                        	(userRole === 'GBO' && user.role === 'USER') ||
+                       	 	(userRole === 'USER' && user.username === username)) {
+                        	callback(user.username, user.state); 
+                    	}
+                	});
+            	})
+            	.catch(error => {
+                	console.error('Error fetching user list:', error);
+            	});
+        	}
+        }
+
+
+        function fetchRemoveList(callback) {
+                fetch('rest/users/list')
+                .then(response => response.json())
+                .then(users => {
+                    let dropdownOptions = '<option value="" selected>Select User</option>';
+                    users.forEach(user => {
+                        if (userRole === 'SU' || 
+                            (userRole === 'GA' && user.role === 'GBO') ||
+                            (userRole === 'USER' && user.username === username)) {
+                            dropdownOptions += `<option value="${user.username}">${user.username}</option>`;
+                        }
+                    });
+                    const dropdownHTML = `
+                        <select id="removeDropdown">${dropdownOptions}</select>
+                        <button onclick="removeUser(document.getElementById('removeDropdown').value)">Remove</button>
+                    `;
+                    userListElement.innerHTML += dropdownHTML;
+                })
+                .catch(error => {
+                    console.error('Error fetching user list:', error);
+                });
+        }
+        
+        function listUsers() {
+            fetch('rest/users/list')
+            .then(response => response.json())
+            .then(users => {
+                userListElement.innerHTML = ''; // Clear the userListElement
+
+                users.forEach(user => {
+                    let userAttributes = '';
+
+                    if (userRole === 'SU') {
+                        userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone},
+                        Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
+                        NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                    } else if (userRole === 'GA') {
+                        if (['GA', 'GBO', 'USER'].includes(user.role)) {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone},
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
+                            NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        }
+                    } else if (userRole === 'GBO') {
+                        if (user.role === 'USER') {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
+                            NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        }
+                    } else if (userRole === 'USER') {
+                        if (user.role === 'USER' && user.profile === 'Publico' && user.state === 'ACTIVE') {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}`;
+                        }
+                    }
+
+                    if (userAttributes) {
+                        userListElement.innerHTML += `<div>${userAttributes}</div>`;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching user list:', error);
+            });
+        }
+        
+            function showModifyUserForm() {
+            fetch('rest/users/list')
+            .then(response => response.json())
+            .then(users => {
+                userListElement.innerHTML = ''; // Clear the userListElement
+
+                users.forEach(user => {
+                    let userAttributes = '';
+
+                    if (userRole === 'SU') {
+                        userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                        Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                        CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                    } else if (userRole === 'GA') {
+                        if (['GA', 'GBO', 'USER'].includes(user.role)) {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                            CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        }
+                    } else if (userRole === 'GBO') {
+                        if (user.role === 'USER') {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                            CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        }
+                    } else if (userRole === 'USER') {
+                        if (user.username === username) {
+                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                            CP: ${user.cp}, NIF: ${user.nif}`;
+                        }
+                    }
+
+                    if (userAttributes) {
+                        userListElement.innerHTML += `
+                            <div>
+                                ${userAttributes}
+                                <form onsubmit="modifyUserAttribute(event, '${user.username}')">
+                                    <select id="attributeToModify-${user.username}">
+                                    	<option value="name">Name</option>
+                                    	<option value="email">Email</option>
+                                    	<option value="phone">Phone</option>
+                                        <option value="profile">Profile</option>
+                                        <option value="occupation">Occupation</option>
+                                        <option value="location">Location</option>
+                                        <option value="household">Household</option>
+                                        <option value="cp">CP</option>
+                                        <option value="nif">NIF</option>
+                                        <option value="photo">Photo</option>
+                                    </select>
+                                    <input type="text" id="newValue-${user.username}" placeholder="Enter new value">
+                                    <input type="submit" value="Change">
+                                </form>
+                            </div>`;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching user list:', error);
+            });
+        }
+
+            function modifyUserAttribute(event, username) {
+                event.preventDefault();
+                
+                const attribute = document.getElementById(`attributeToModify-${username}`).value;
+                const newValue = document.getElementById(`newValue-${username}`).value;
+
+                if (userRole === 'USER' && ['username', 'email', 'name'].includes(attribute)) {
+                    alert('You do not have permission to change this attribute.');
+                    return;
+                }
+                
+             // Validate input format for cp and nif
+                if (attribute === 'cp' && !/^\d{4}-\d{3}$/.test(newValue)) {
+                    alert('Invalid CP format. Please use format xxxx-xxx.');
+                    return;
+                }
+
+                if (attribute === 'nif' && !/^\d{9}$/.test(newValue)) {
+                    alert('Invalid NIF format. Please enter a 9-digit number.');
+                    return;
+                }
+                
+                const updatedUserData = {
+                    username: username,
+                    [attribute]: newValue
+                };
+
+                fetch('rest/users/updateUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedUserData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('User attribute updated:', data);
+                    alert('User attribute updated successfully!');
+                    //location.reload(); // Reload the page to reflect the changes
+                })
+                .catch(error => {
+                    console.error('Error updating user attribute:', error);
+                    alert('An error occurred while updating user attribute.');
+                });
+            }
+        
+ 
+            function showRoleChange() {
+                hideAllSections();
+                userListElement.innerHTML = ''; // Clear the userListElement
+                fetchRoleChangeList(alterUserRole);
+                userListElement.style.display = 'block'; // Display the userListElement
+            }
+
+            function showStateChange() {
+                hideAllSections();
+                userListElement.innerHTML = ''; // Clear the userListElement
+                fetchStateChangeList(alterUserState);
+                userListElement.style.display = 'block'; // Display the userListElement
+            }
+
+            function showRemoveList() {
+                hideAllSections();
+                userListElement.innerHTML = ''; // Clear the userListElement
+                fetchRemoveList(removeUser);
+                userListElement.style.display = 'block'; // Display the userListElement
+            }
+
+            function showListUsers() {
+                hideAllSections();
+                userListElement.innerHTML = ''; // Clear the userListElement
+                listUsers();
+                userListElement.style.display = 'block'; // Display the userListElement
+            }
+
+        // Initially load the user list
+        showRoleChange(); // or showStateChange() or showRemoveList() based on your preference
+    </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>Welcome to your Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        table {
+            width: 50%;
+            margin: 50px auto;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        td:first-child {
+            border-right: 1px solid #ccc;
+        }
+
+        td a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        td a:hover {
+            color: #3f8c4b; /* Updated color */
+        }
+
+        #sessionToken {
+            width: 50%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #sessionToken p {
+            margin: 10px 0;
+        }
+
+        #sessionToken strong {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 id="welcomeMessage">Welcome to your Dashboard!</h1>
+    
+    <div id="roleMessage"></div>
+    <div id="userList"></div>
+    <div id="sessionToken"></div> 
+    
+     <script>
+     
+     console.log("Cookies in bemvindo.html:", document.cookie);
+
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        const userRole = getCookie('userRole');
+        const username = getCookie('username');
+        const sessionToken = getCookie('authToken');
+        const validfrom = parseInt(getCookie('validfrom'));  
+        const validto = parseInt(getCookie('validto'));
+        const verifier = getCookie('verifier');
+
+        // Get the elements
+        const roleMessageElement = document.getElementById('roleMessage');
+        const userListElement = document.getElementById('userList');
+        const welcomeMessageElement = document.getElementById('welcomeMessage');
+        const sessionTokenElement = document.getElementById('sessionToken');
+        
+        function formatTime(ms) {
+            const date = new Date(ms);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        if(sessionToken) {
+            sessionTokenElement.innerHTML = `
+                <p><strong>Session Token:</strong></p>
+                <p>Token ID: ${sessionToken}</p>
+                <p>Username: ${username}</p>
+                <p>Role: ${userRole}</p>
+                <p>Valid From: ${formatTime(validfrom)}</p>
+                <p>Valid To: ${formatTime(validto)}</p>
+                <p>Verifier: ${verifier}</p>
+            `;
+        } else {
+            sessionTokenElement.innerText = 'No session token available.';
+        }
+
+        function logout() {
+            document.cookie = 'userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; 
+            window.location.href = '/index.html';  
+        }
+    </script>
+    
+    <table>
+        <tr>
+            <td colspan="2" style="font-weight:bold;">Available Services:</td>
+        </tr>
+        <tr>
+            <td><a href='/dashboard.html'>Dashboard</a></td>
+        </tr>
+        <tr>
+            <td><a href='#' onclick="logout()">Logout</a></td>
+        </tr>
+    </table>
+
+</body>
+</html>

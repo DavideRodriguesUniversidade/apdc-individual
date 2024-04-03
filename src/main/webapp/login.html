@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>Login Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        form {
+            width: 50%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #3f8c4b; /* Updated color */
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2a653a; /* Darker shade for hover */
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #3f8c4b; /* Updated color */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2a653a; /* Darker shade for hover */
+        }
+
+    </style>
+</head>
+<body>
+    <button onclick="window.location.href = 'index.html';">Go to Home page</button>
+    <h1>Login</h1>
+
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="submit" value="Login">
+    </form>
+
+    <script>
+        const form = document.getElementById('loginForm');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = {
+                username: form.username.value,
+                password: form.password.value
+            };
+
+            fetch('rest/login/v1', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.text().then(error => {
+                        throw new Error(error);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                document.cookie = `authToken=${data.tokenID}; path=/;`;
+                document.cookie = `userRole=${data.role}; path=/;`;
+                document.cookie = `username=${data.username}; path=/;`;
+                document.cookie = `validfrom=${data.validFrom}; path=/;`;
+                document.cookie = `validto=${data.validTo}; path=/;`;
+                document.cookie = `verifier=${data.verifier}; path=/;`;
+
+                console.log('Cookies set:', document.cookie);
+                
+                
+                alert('Login successful!');
+                window.location.href = '/bemvindo.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+
+                if (error.message.includes("Wrong password")) {
+                    alert('Wrong password.');
+                } else if (error.message.includes("User does not exist")) {
+                    alert('User does not exist.');
+                } else if (error.message.includes("User is inactive.")) {
+                    alert('User is inactive.');
+                } else {
+                    alert('An error occurred while logging in.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
