@@ -74,7 +74,7 @@ public class RegisterResource {
                         .set("user_nif", data.nif)
                         .set("user_photo", data.photo)
                         .set("user_role", "USER")
-                        .set("user_state", "INATIVO")
+                        .set("user_state", "INACTIVE")
                         .build();
                 txn.add(user);
                 LOG.info("User registered " + data.username);

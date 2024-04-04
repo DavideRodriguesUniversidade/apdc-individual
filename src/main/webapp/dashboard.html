@@ -109,6 +109,7 @@
 	    // Retrieve the user role and username from cookies
 	    const userRole = getCookie('userRole');
 	    const username = getCookie('username');
+	    const authToken = getCookie('authToken');
 
         // Get the roleMessage and userList elements
         const roleMessageElement = document.getElementById('roleMessage');
@@ -191,7 +192,6 @@
                 <select id="roleDropdown-${username}">${dropdownOptions}</select>
                 <button onclick="updateUserRole('${username}', '${currentRole}')">Change Role</button>
             `;
-
             userListElement.innerHTML += `<div>${username} - ${currentRole} ${dropdownHTML}</div>`;
         }
 
@@ -216,18 +216,31 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'authToken': authToken // Pass the authToken in the header
                 },
                 body: JSON.stringify({ username: username }),
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('User removed:', data);
                 location.reload();  // Reload the page to reflect the changes
             })
             .catch(error => {
                 console.error('Error removing user:', error);
+
+                if (error.message.includes("Not allowed")) {
+                    alert('You are not allowed to perform this action.');
+                } else {
+                    alert('An error occurred while removing the user.');
+                }
             });
         }
+
 
         function updateUserRole(username, currentRole) {
             const newRole = document.getElementById(`roleDropdown-${username}`).value;
@@ -236,21 +249,33 @@
                 username: username,
                 role: newRole
             };
-
+            
             fetch('rest/users/updateRole', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
+                    'authToken': authToken, // Pass the authToken in the header
+                 },
                 body: JSON.stringify(userData),
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Role updated:', data);
                 location.reload();  // Reload the page to reflect the changes
             })
             .catch(error => {
                 console.error('Error updating role:', error);
+
+                if (error.message.includes("Not allowed")) {
+                    alert('You are not allowed to perform this action.');
+                } else {
+                    alert('An error occurred while updating the role.');
+                }
             });
         }
 
@@ -266,18 +291,31 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'authToken': authToken // Pass the authToken in the header
                 },
                 body: JSON.stringify(userData),
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('State updated:', data);
                 location.reload();  // Reload the page to reflect the changes
             })
             .catch(error => {
                 console.error('Error updating state:', error);
+
+                if (error.message.includes("Not allowed")) {
+                    alert('You are not allowed to perform this action.');
+                } else {
+                    alert('An error occurred while updating the state.');
+                }
             });
         }
+
 
         function fetchRoleChangeList(callback) {
             fetch('rest/users/list')
@@ -342,7 +380,13 @@
         }
         
         function listUsers() {
-            fetch('rest/users/list')
+        	fetch('rest/users/check', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authToken': authToken
+                }
+            })
             .then(response => response.json())
             .then(users => {
                 userListElement.innerHTML = ''; // Clear the userListElement
@@ -465,6 +509,14 @@
                     alert('Invalid NIF format. Please enter a 9-digit number.');
                     return;
                 }
+                if (attribute === 'phone' && !/^\d{9}$/.test(newValue)) {
+                    alert('Invalid phone format. Please enter a 9-digit number.');
+                    return;
+                }
+                if (attribute === 'email' && !/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/i.test(newValue)) {
+                    alert('Invalid email format. Please enter a valid email address.');
+                    return;
+                }
                 
                 const updatedUserData = {
                     username: username,
@@ -475,6 +527,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'authToken': authToken
                     },
                     body: JSON.stringify(updatedUserData),
                 })

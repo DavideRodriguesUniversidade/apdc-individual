@@ -115,6 +115,7 @@
             .then(data => {
                 console.log('Response data:', data);
                 document.cookie = `authToken=${data.tokenID}; path=/;`;
+                document.cookie = `authTokenRole=${data.role}; path=/;`;
                 document.cookie = `userRole=${data.role}; path=/;`;
                 document.cookie = `username=${data.username}; path=/;`;
                 document.cookie = `validfrom=${data.validFrom}; path=/;`;

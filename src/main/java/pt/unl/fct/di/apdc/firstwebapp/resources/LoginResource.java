@@ -24,6 +24,7 @@ import com.google.cloud.datastore.Transaction;
 import com.google.gson.Gson;
 
 import pt.unl.fct.di.apdc.firstwebapp.util.AuthToken;
+import pt.unl.fct.di.apdc.firstwebapp.util.AuthTokenManager;
 import pt.unl.fct.di.apdc.firstwebapp.util.LoginData;
 import pt.unl.fct.di.apdc.firstwebapp.util.RegisterData;;
 
@@ -66,12 +67,16 @@ public class LoginResource {
                 String userRole = (String) user.getString("user_role");
                 token.setRole(userRole); // set the user role in the token
 
+                AuthTokenManager.addToken(token.getTokenID(), token);
+
+                
                 // Create cookies
                 NewCookie authTokenCookie = new NewCookie("authToken", token.getTokenID(), "/", null, "comment", 60 * 60 * 2, false, false);
+                NewCookie authTokenRoleCookie = new NewCookie("authToken", token.getRole(), "/", null, "comment", 60 * 60 * 2, false, false);
                 NewCookie usernameCookie = new NewCookie("username", data.username, "/", null, "comment", 60 * 60 * 2, false, false);
                 NewCookie userRoleCookie = new NewCookie("userRole", userRole, "/", null, "comment", 60 * 60 * 2, false, false);
-
-                return Response.ok(g.toJson(token)).cookie(authTokenCookie, usernameCookie, userRoleCookie).build();
+                
+                return Response.ok(g.toJson(token)).cookie(authTokenCookie, authTokenRoleCookie, usernameCookie, userRoleCookie).build();
             } else {
                 LOG.warning("Wrong password for: " + data.username);
                 return Response.status(Status.FORBIDDEN).entity("Wrong password.").build();

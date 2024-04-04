@@ -28,5 +28,13 @@ public class AuthToken {
     public String getTokenID() {
         return this.tokenID;
     }
+    
+    public String getRole() {
+        return this.role;
+    }
+    
+    public String getUsername() {
+        return this.username;
+    }
 
 }
