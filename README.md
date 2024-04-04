@@ -9,7 +9,7 @@ Roadmap:
 URL: https://github.com/DavideRodriguesUniversidade/apdc-individual.git
 
 * Clonar o projeto para o workspace no eclipse 
-* Ex: git clone https://github.com/DavideRodriguesUniversidade/apdc-individual.git
+* Ex: git clone https://github.com/DavideRodriguesUniversidade/apdc-individual
 * Criar depois o projeto no eclipse (Maven)
 
 **Testar o deploy local**
