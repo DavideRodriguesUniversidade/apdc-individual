@@ -1,6 +1,5 @@
 package pt.unl.fct.di.apdc.firstwebapp.util;
 
-import com.google.cloud.datastore.Blob;
 
 public class RegisterData {
 
@@ -15,7 +14,7 @@ public class RegisterData {
     public String household;
     public String cp;
     public String nif;
-    public String photo;  // Change the type to Blob
+    public String photo; 
     public String role;
     public String state;
 
@@ -35,7 +34,7 @@ public class RegisterData {
         this.household = household;
         this.cp = cp;
         this.nif = nif;
-        this.photo = photo;  // Assign the Blob directly
+        this.photo = photo;  
         this.role = role;
         this.state = state;
     }

@@ -63,14 +63,16 @@
     </style>
 </head>
 <body>
-    <h1 id="welcomeMessage">Welcome to your Dashboard!</h1>
+    <h1 id="welcomeMessage">Welcome!</h1>
     
     <div id="roleMessage"></div>
     <div id="userList"></div>
     <div id="sessionToken"></div> 
     
-     <script>
-     
+    <script src="sessionManager.js"></script>
+    
+    
+     <script>     
      console.log("Cookies in bemvindo.html:", document.cookie);
 
         
@@ -125,6 +127,10 @@
             document.cookie = 'authTokenRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             window.location.href = '/index.html';  
         }
+
+        window.onload = function() {
+            checkSessionExpiration(sessionToken);
+        };
     </script>
     
     <table>

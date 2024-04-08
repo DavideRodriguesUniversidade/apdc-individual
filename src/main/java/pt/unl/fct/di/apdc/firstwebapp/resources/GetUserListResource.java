@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -74,7 +75,7 @@ public class GetUserListResource {
         return Response.ok(g.toJson(userList)).build();
     }
     
-    @GET
+    @POST
     @Path("/check")
     public Response getUsersList(@HeaderParam("authToken") String authTokenID) {
         LOG.fine("Attempt to retrieve users list.");

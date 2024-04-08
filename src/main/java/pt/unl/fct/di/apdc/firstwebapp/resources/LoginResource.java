@@ -3,7 +3,9 @@ package pt.unl.fct.di.apdc.firstwebapp.resources;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -14,6 +16,10 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import javax.ws.rs.core.HttpHeaders;
+import java.util.Map;
+
+
 import com.google.appengine.repackaged.org.apache.commons.codec.digest.DigestUtils;
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Datastore;
@@ -23,6 +29,7 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Transaction;
 import com.google.gson.Gson;
 
+import pt.unl.fct.di.apdc.firstwebapp.authentication.SignatureUtils;
 import pt.unl.fct.di.apdc.firstwebapp.util.AuthToken;
 import pt.unl.fct.di.apdc.firstwebapp.util.AuthTokenManager;
 import pt.unl.fct.di.apdc.firstwebapp.util.LoginData;
@@ -33,6 +40,8 @@ import pt.unl.fct.di.apdc.firstwebapp.util.RegisterData;;
 public class LoginResource {
     
     private static final Logger LOG = Logger.getLogger(LoginResource.class.getName());
+
+	private static final String key = "dhsjfhndkjvnjdsdjhfkjdsjfjhdskjhfkjsdhfhdkjhkfajkdkajfhdkmc";	
 
     private final Gson g = new Gson();
     private final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
@@ -86,4 +95,39 @@ public class LoginResource {
             return Response.status(Status.FORBIDDEN).entity("User does not exist.").build();
         }
     }
+    
+    @POST
+    @Path("/checkPermissions")
+    public Response checkSessionPermissions(@CookieParam("sessionToken") String authTokenID) {
+        AuthToken token = AuthTokenManager.getToken(authTokenID);
+        boolean valid = checkPermissions(token);
+        if(valid) {
+            return Response.ok("true").build();
+        } else {
+            return Response.ok("false").build();
+        }
+    }
+    
+    public static boolean checkPermissions(AuthToken token) {
+		if (token == null) {
+			return false;
+		}
+
+		String value = token.getTokenID();
+		String[] values = value.split("\\.");
+	
+		String signatureNew = SignatureUtils.calculateHMac(key, values[0]+"."+values[1]+"."+values[2]+"."+values[3]+"."+values[4]);
+		String signatureOld = values[5];
+					
+		if(!signatureNew.equals(signatureOld)) {
+			return false;
+		}
+		
+		if(System.currentTimeMillis() > (Long.valueOf(values[3]) + Long.valueOf(values[4]))) {
+			
+			return false;
+		}	
+		
+		return true;
+	}
 }

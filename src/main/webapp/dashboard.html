@@ -76,7 +76,6 @@
 <button onclick="changePassword()">Change Password</button>
 
 
-
 <body>
     <div id="roleMessage"></div>
     <div id="userList"></div>
@@ -97,9 +96,10 @@
     </form>
 	</div>
     
+   <script src="sessionManager.js"></script>
     
     
-    <script>
+    <script>   
 	    function getCookie(name) {
 	        const value = `; ${document.cookie}`;
 	        const parts = value.split(`; ${name}=`);
@@ -381,7 +381,7 @@
         
         function listUsers() {
         	fetch('rest/users/check', {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'authToken': authToken
@@ -395,20 +395,27 @@
                     let userAttributes = '';
 
                     if (userRole === 'SU') {
-                        userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone},
-                        Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
-                        NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                    	 userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                             Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                             CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state} `;
+                    
+                         userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
+
                     } else if (userRole === 'GA') {
                         if (['GA', 'GBO', 'USER'].includes(user.role)) {
-                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone},
-                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
-                            NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        	userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                                Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                                CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state} `;
+                       
+                            userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
                         }
                     } else if (userRole === 'GBO') {
                         if (user.role === 'USER') {
-                            userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
-                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, CP: ${user.cp}, 
-                            NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                        	userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
+                                Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                                CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state} `;
+                       
+                            userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
                         }
                     } else if (userRole === 'USER') {
                         if (user.role === 'USER' && user.profile === 'Publico' && user.state === 'ACTIVE') {
@@ -426,7 +433,7 @@
             });
         }
         
-            function showModifyUserForm() {
+        function showModifyUserForm() {
             fetch('rest/users/list')
             .then(response => response.json())
             .then(users => {
@@ -437,19 +444,26 @@
 
                     if (userRole === 'SU') {
                         userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
-                        Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
-                        CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                            CP: ${user.cp}, NIF: ${user.nif} `;
+                        
+                        userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
+                        
                     } else if (userRole === 'GA') {
                         if (['GA', 'GBO', 'USER'].includes(user.role)) {
                             userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
-                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
-                            CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                                Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                                CP: ${user.cp}, NIF: ${user.nif} `;
+                            
+                            userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
                         }
                     } else if (userRole === 'GBO') {
                         if (user.role === 'USER') {
                             userAttributes = `Username: ${user.username}, Email: ${user.email}, Name: ${user.name}, Phone: ${user.phone}, 
-                            Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
-                            CP: ${user.cp}, NIF: ${user.nif}, Role: ${user.role}, Status: ${user.state}`;
+                                Profile: ${user.profile}, Occupation: ${user.occupation}, Location: ${user.location}, Household: ${user.household}, 
+                                CP: ${user.cp}, NIF: ${user.nif} `;
+                            
+                            userAttributes += `<img src="data:image/png;base64,${user.photo}" alt="User Photo" width="25" />`;
                         }
                     } else if (userRole === 'USER') {
                         if (user.username === username) {
@@ -463,11 +477,11 @@
                         userListElement.innerHTML += `
                             <div>
                                 ${userAttributes}
-                                <form onsubmit="modifyUserAttribute(event, '${user.username}')">
-                                    <select id="attributeToModify-${user.username}">
-                                    	<option value="name">Name</option>
-                                    	<option value="email">Email</option>
-                                    	<option value="phone">Phone</option>
+                                <form onsubmit="modifyUserAttribute(event, '${user.username}')" enctype="multipart/form-data">
+                                    <select id="attributeToModify-${user.username}" onchange="togglePhotoInput(this, '${user.username}')">
+                                        <option value="name">Name</option>
+                                        <option value="email">Email</option>
+                                        <option value="phone">Phone</option>
                                         <option value="profile">Profile</option>
                                         <option value="occupation">Occupation</option>
                                         <option value="location">Location</option>
@@ -476,7 +490,7 @@
                                         <option value="nif">NIF</option>
                                         <option value="photo">Photo</option>
                                     </select>
-                                    <input type="text" id="newValue-${user.username}" placeholder="Enter new value">
+                                    <input type="file" id="newValue-${user.username}" accept="image/*" style="display: none;" />
                                     <input type="submit" value="Change">
                                 </form>
                             </div>`;
@@ -488,18 +502,51 @@
             });
         }
 
-            function modifyUserAttribute(event, username) {
-                event.preventDefault();
-                
-                const attribute = document.getElementById(`attributeToModify-${username}`).value;
-                const newValue = document.getElementById(`newValue-${username}`).value;
+        function togglePhotoInput(selectElement, userId) {
+            const photoInput = document.getElementById(`newValue-${userId}`);
+            if (selectElement.value === 'photo') {
+                photoInput.style.display = 'block';
+            } else {
+                photoInput.style.display = 'none';
+            }
+        }
 
+
+        function modifyUserAttribute(event, username) {
+            event.preventDefault();
+            
+            const attribute = document.getElementById(`attributeToModify-${username}`).value;
+            let newValue;
+
+            if (attribute === 'photo') {
+                const fileInput = document.getElementById(`newValue-${username}`);
+                const file = fileInput.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(event) {
+                        const base64String = event.target.result.split(',')[1];
+                        newValue = base64String;
+
+                        // Call the function to send the modified data
+                        sendModifiedUserData(username, attribute, newValue);
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please select a file.');
+                    return;
+                }
+            } else {
+                newValue = document.getElementById(`newValue-${username}`).value;
+                
                 if (userRole === 'USER' && ['username', 'email', 'name'].includes(attribute)) {
                     alert('You do not have permission to change this attribute.');
                     return;
                 }
                 
-             // Validate input format for cp and nif
+                // Validate input format for cp, nif, phone, and email
                 if (attribute === 'cp' && !/^\d{4}-\d{3}$/.test(newValue)) {
                     alert('Invalid CP format. Please use format xxxx-xxx.');
                     return;
@@ -509,39 +556,47 @@
                     alert('Invalid NIF format. Please enter a 9-digit number.');
                     return;
                 }
+                
                 if (attribute === 'phone' && !/^\d{9}$/.test(newValue)) {
                     alert('Invalid phone format. Please enter a 9-digit number.');
                     return;
                 }
+
                 if (attribute === 'email' && !/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/i.test(newValue)) {
                     alert('Invalid email format. Please enter a valid email address.');
                     return;
                 }
-                
-                const updatedUserData = {
-                    username: username,
-                    [attribute]: newValue
-                };
 
-                fetch('rest/users/updateUser', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'authToken': authToken
-                    },
-                    body: JSON.stringify(updatedUserData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('User attribute updated:', data);
-                    alert('User attribute updated successfully!');
-                    //location.reload(); // Reload the page to reflect the changes
-                })
-                .catch(error => {
-                    console.error('Error updating user attribute:', error);
-                    alert('An error occurred while updating user attribute.');
-                });
+                sendModifiedUserData(username, attribute, newValue);
             }
+        }
+
+        function sendModifiedUserData(username, attribute, value) {
+            const updatedUserData = {
+                username: username,
+                [attribute]: value
+            };
+
+            fetch('rest/users/updateUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authToken': authToken
+                },
+                body: JSON.stringify(updatedUserData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('User attribute updated:', data);
+                alert('User attribute updated successfully!');
+                //location.reload(); // Reload the page to reflect the changes
+            })
+            .catch(error => {
+                console.error('Error updating user attribute:', error);
+                alert('An error occurred while updating user attribute.');
+            });
+        }
+
         
  
             function showRoleChange() {
@@ -574,6 +629,11 @@
 
         // Initially load the user list
         showRoleChange(); // or showStateChange() or showRemoveList() based on your preference
+        
+
+        window.onload = function() {
+            checkSessionExpiration(authToken);
+        };
     </script>
 </body>
 </html>

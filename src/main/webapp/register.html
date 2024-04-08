@@ -45,21 +45,21 @@
         }
 
         input[type="submit"] {
-            background-color: #3f8c4b; /* Updated color */
+            background-color: #3f8c4b;
             color: #fff;
             cursor: pointer;
             transition: background-color 0.3s;
         }
 
         input[type="submit"]:hover {
-            background-color: #2a653a; /* Darker shade for hover */
+            background-color: #2a653a;
         }
 
         button {
             display: block;
             margin: 20px auto;
             padding: 10px 20px;
-            background-color: #3f8c4b; /* Updated color */
+            background-color: #3f8c4b;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -68,14 +68,11 @@
         }
 
         button:hover {
-            background-color: #2a653a; /* Darker shade for hover */
+            background-color: #2a653a;
         }
 
     </style>
 </head>
-
-<button onclick="window.location.href = 'index.html';">Go to Home page</button>
-
 <body>
 
 <h2>User Registration</h2>
@@ -84,7 +81,7 @@
     <label for="username">Username:</label><br>
     <input type="text" id="username" name="username" required><br>
 
-	<label for="email">Email:</label><br>
+    <label for="email">Email:</label><br>
     <input type="email" id="email" name="email" required><br>
     
     <label for="name">Name:</label><br>
@@ -110,10 +107,10 @@
     <select id="location" name="location">
         <option value="Empresa">Empresa</option>
         <option value="Escola">Escola</option>
-        <option value="Escritório">Escritorio</option>
+        <option value="Escritório">Escritório</option>
     </select><br>
     
-    <label for="name">Household:</label><br>
+    <label for="household">Household:</label><br>
     <input type="text" id="household" name="household"><br>
     
     <label for="cp">Codigo postal:</label><br>
@@ -122,69 +119,90 @@
     <label for="nif">NIF:</label><br>
     <input type="text" id="nif" name="nif" maxlength="9" required><br>
     
-   <label for="photo">Photo:</label><br>
+    <label for="photo">Photo:</label><br>
     <input type="file" id="photo" name="photo" accept="image/*"><br>
     
     <label for="password">Password:</label><br>
     <input type="password" id="password" name="password" required><br>
 
-    <label for="password">Confirm Password:</label><br>
+    <label for="confirmPassword">Confirm Password:</label><br>
     <input type="password" id="confirmPassword" name="confirmPassword" required><br>
 
-    
     <input type="submit" value="Register">
 </form>
 
 <script>
     const form = document.getElementById('registrationForm');
-    const cpInput = document.getElementById('cp');
 
-    cpInput.addEventListener('input', function(event) {
-        let value = event.target.value;
-
-        // Remove any non-numeric characters
-        value = value.replace(/\D/g, '');
-
-        // Add hyphen at the correct position
-        if (value.length > 4) {
-            value = value.substring(0, 4) + '-' + value.substring(4, 7);
-        }
-
-        // Limit the length of the input to match the pattern XXXX-XXX
-        if (value.length > 8) {
-            value = value.substring(0, 8);
-        }
-
-        // Update the input value
-        event.target.value = value;
-    });
-    
     form.addEventListener('submit', function(event) {
         event.preventDefault();
 
         const password = form.password.value;
-        const confirmPassword = form.confirmPassword.value; // add an id "confirmPassword" to the confirm password input field
-        
+        const confirmPassword = form.confirmPassword.value;
+
         if (password !== confirmPassword) {
             alert('Passwords do not match. Please try again.');
-            return; // exit the function and do not proceed with the registration
+            return;
         }
-    
-        const formData = {
-            username: form.username.value,
-            email: form.email.value,
-            name: form.name.value,
-            phone: form.phone.value, 
-            profile: form.profile.value,
-            occupation: form.occupation.value,
-            location: form.location.value,
-            household: form.household.value,
-            cp: form.cp.value,
-            nif: form.nif.value,
-            photo: form.photo.value,
-            password: password
-        };
-    
+
+        const fileInput = document.getElementById('photo');
+        const file = fileInput.files[0];
+
+        if (file) {
+        	const fileSize = file.size;
+            const maxSize = 1500; // 1500 bytes (1.5 KB)
+
+            if (fileSize > maxSize) {
+                alert('Error: Image is too big. Please upload an image smaller than 1.5KB.');
+                return;
+            }
+        	
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const base64String = event.target.result.split(',')[1];
+                //const base6d4String = event.target.result;
+
+                const formData = {
+                    username: form.username.value,
+                    email: form.email.value,
+                    name: form.name.value,
+                    phone: form.phone.value, 
+                    profile: form.profile.value,
+                    occupation: form.occupation.value,
+                    location: form.location.value,
+                    household: form.household.value,
+                    cp: form.cp.value,
+                    nif: form.nif.value,
+                    photo: base64String,
+                    password: password
+                };
+
+                sendFormData(formData);
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            const formData = {
+                username: form.username.value,
+                email: form.email.value,
+                name: form.name.value,
+                phone: form.phone.value, 
+                profile: form.profile.value,
+                occupation: form.occupation.value,
+                location: form.location.value,
+                household: form.household.value,
+                cp: form.cp.value,
+                nif: form.nif.value,
+                photo: "",
+                password: password
+            };
+
+            sendFormData(formData);
+        }
+    });
+
+    function sendFormData(formData) {
         fetch('rest/register/v2', {
             method: 'POST',
             headers: {
@@ -204,8 +222,7 @@
         .then(data => {
             console.log('Response data:', data);
     
-            alert('User registered ' + form.name.value);
-            // Redirect to login page or any other page
+            alert('User registered ' + formData.name);
             window.location.href = '/login.html';
         })
         .catch(error => {
@@ -221,8 +238,8 @@
                 alert('An error occurred while registering.');
             }
         });
-    });
+    }
 </script>
+
 </body>
 </html>
-
